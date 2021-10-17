@@ -3,7 +3,7 @@
 #    / __ \____  _____/ /_____  _____/ __ \/ ___/ |/ /
 #   / / / / __ \/ ___/ //_/ _ \/ ___/ / / /\__ \|   / 
 #  / /_/ / /_/ / /__/ ,< /  __/ /  / /_/ /___/ /   |  
-# /_____/\____/\___/_/|_|\___/_/   \____//____/_/|_|  :AUTO
+# /_____/\____/\___/_/|_|\___/_/   \____//____/_/|_|  :NAKED-AUTO
 # 
 # Title:            Docker-OSX (Mac on Docker)
 # Author:           Sick.Codes https://twitter.com/sickcodes
@@ -12,33 +12,9 @@
 # Repository:       https://github.com/sickcodes/Docker-OSX
 # Website:          https://sick.codes
 # 
-# This Dockerfile is a pre-installed naked installation of Docker-OSX!
+# This Dockerfile needs you to supply a pre-installed installation of Docker-OSX!
 # 
-#   Default username: user
-#   Default password: alpine
-# 
-# Take screenshots in the Arch container and display in terminal: scrotcat
-# readme: 
-# timezone: UTC/GMT
-# 
-# Future versions will navigate the installation process, inside the Dockerfile.
-# 
-#
-# Build:
-#
-#       docker build -t docker-osx:auto -f Dockerfile.auto .
-# 
-# Run:
-# 
-#       docker run -it --device /dev/kvm -p 50922:10022 -v ${PWD}/mac_hdd_ng_auto.img:/image     docker-osx-auto:latest
-# 
-# SSH:
-#       From inside the container:
-#           ssh -i ~/.ssh/id_docker_osx user@127.0.0.1 -p 10022
-# 
-#       From outside the container:
-#           ssh localhost user@127.0.0.1 -p 50922
-#           docker exec -it containerid ssh -i ~/.ssh/id_docker_osx user@127.0.0.1 -p 10022
+# Visit https://github.com/sickcodes/Docker-OSX for info
 
 FROM sickcodes/docker-osx:latest
 
@@ -47,6 +23,8 @@ MAINTAINER 'https://twitter.com/sickcodes' <https://sick.codes>
 USER root
 
 WORKDIR /root
+
+RUN rm -f /home/arch/OSX-KVM/mac_hdd_ng.img
 
 # For taking screenshots of the Xfvb screen, useful during development.
 ARG SCROT
@@ -70,6 +48,9 @@ RUN if [[ "${RANKMIRRORS}" ]]; then \
         && cat /etc/pacman.d/mirrorlist \
     ; fi \
     ; yes | pacman -Scc
+
+# For taking screenshots of the Xfvb screen, useful during development.
+ARG SCROT
 
 RUN pacman -Syu xorg-server-xvfb wget xterm xorg-xhost xorg-xrandr sshpass --noconfirm \
     && if [[ "${SCROT}" ]]; then \
@@ -118,7 +99,7 @@ RUN mkdir -p ~/.ssh \
     && tee -a ~/.ssh/config <<< '    StrictHostKeyChecking no' \
     && tee -a ~/.ssh/config <<< '    UserKnownHostsFile=/dev/null'
 
-ARG COMPLETE=true
+ARG COMPLETE=
 
 # use the COMPLETE arg, for a complete image, ready to boot.
 # otherwise use your own image: -v "$PWD/disk.img":/image
@@ -126,11 +107,11 @@ ARG WGET_OPTIONS=
 # ARG WGET_OPTIONS='--no-verbose'
 
 # Feel free to take a copy of this image and then host it internally
-ARG IMAGE_URL='https://images.sick.codes/mac_hdd_ng_auto.img'
+ARG IMAGE_URL=
 # ARG IMAGE_URL='https://images.sick.codes/mac_hdd_ng_auto_big_sur.img'
 
 RUN if [[ "${COMPLETE}" ]]; then \
-        echo "Downloading 20GB image... This step might take a while... Press Ctrl+C if you want to abort." \
+        echo "Downloading your image... This step might take a while... Press Ctrl+C if you want to abort." \
         ; rm -f /home/arch/OSX-KVM/mac_hdd_ng.img \
         && wget ${WGET_OPTIONS} -O /home/arch/OSX-KVM/mac_hdd_ng.img "${IMAGE_URL}" \
     ; fi
@@ -159,7 +140,7 @@ ENV GENERATE_UNIQUE=false
 # Boolean for generating a bootdisk with specific serials.
 ENV GENERATE_SPECIFIC=false
 
-ENV IMAGE_PATH=/home/arch/OSX-KVM/mac_hdd_ng.img
+ENV IMAGE_PATH=/image
 ENV IMAGE_FORMAT=qcow2
 
 ENV KVM='accel=kvm:tcg'
@@ -225,7 +206,7 @@ CMD echo "${BOILERPLATE}" \
             --mac-address "${MAC_ADDRESS}" \
             --width "${WIDTH:-1920}" \
             --height "${HEIGHT:-1080}" \
-            --output-bootdisk "${BOOTDISK:=/home/arch/OSX-KVM/OpenCore-Catalina/OpenCore.qcow2}"  \
+            --output-bootdisk "${BOOTDISK:=/home/arch/OSX-KVM/OpenCore-Catalina/OpenCore.qcow2}" \
     || exit 1 ; } \
     ; { [[ "${DISPLAY}" = ':99' ]] || [[ "${HEADLESS}" == true ]] ; } && { \
         nohup Xvfb :99 -screen 0 1920x1080x16 \
@@ -252,16 +233,4 @@ CMD echo "${BOILERPLATE}" \
         ; tee -a ~/.ssh/config <<< '    StrictHostKeyChecking no' \
         ; tee -a ~/.ssh/config <<< '    UserKnownHostsFile=/dev/null' \
     ; } \
-    && echo 'Default username: user' \
-    && echo 'Default password: alpine' \
-    && echo 'Change it immediately using the command: passwd' \
     && ssh -i ~/.ssh/id_docker_osx ${USERNAME:=user}@127.0.0.1 -p 10022 "${OSX_COMMANDS}"
-
-# username: user
-# password: alpine
-# screenshot: docker exec -it containerid scrotcat
-# readme: https://github.com/sickcodes/Docker-OSX
-# timezone: UTC/GMT
-
-# Future case option when supplying IMAGE_PATH:
-#   Zstandard*) zstd -d /image && export IMAGE_PATH=/image;; \

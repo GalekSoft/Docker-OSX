@@ -26,13 +26,13 @@ General options:
     --vnc-password, -v <string>         Choose a VNC passwd.
 
 Flags
+    --no-cache, -n                      Enable --no-cache (default already)
     --no-no-cache, -nn                  Disable --no-cache docker builds
     --help, -h, help                    Display this help and exit
 "
 
 # set -xeuf -o pipefail
 
-NO_CACHE='--no-cache'
 
 # gather arguments
 while (( "$#" )); do
@@ -96,6 +96,10 @@ while (( "$#" )); do
                 shift
                 shift
             ;;
+    --no-cache | -n )
+                export NO_CACHE='--no-cache'
+                shift
+            ;;
     --no-no-cache | -nn )
                 export NO_CACHE=
                 shift
@@ -112,11 +116,15 @@ BRANCH="${BRANCH:=master}"
 REPO="${REPO:=https://github.com/sickcodes/Docker-OSX.git}"
 VNC_PASSWORD="${VNC_PASSWORD:=testing}"
 MIRROR_COUNTRY="${MIRROR_COUNTRY:=US}"
+NO_CACHE="${NO_CACHE:=--no-cache}"
+
 
 TEST_BUILDS=(
 'docker-osx:latest'
 'docker-osx:naked'
+'docker-osx:naked-auto'
 'docker-osx:big-sur'
+'docker-osx:monterey'
 'docker-osx:auto'
 #'docker-osx:auto-big-sur'
 )
@@ -195,8 +203,7 @@ clone_repo () {
 
 
 docker-osx:latest () {
-    docker build \
-        "${NO_CACHE}" \
+    docker build ${NO_CACHE} \
         --build-arg BRANCH="${BRANCH}" \
         --build-arg RANKMIRRORS=true \
         --build-arg MIRROR_COUNTRY="${MIRROR_COUNTRY}" \
@@ -207,8 +214,7 @@ docker-osx:latest () {
 
 
 docker-osx:naked () {
-    docker build \
-        "${NO_CACHE}" \
+    docker build ${NO_CACHE} \
         --build-arg RANKMIRRORS=true \
         --build-arg MIRROR_COUNTRY="${MIRROR_COUNTRY}" \
         -f ./Dockerfile.naked \
@@ -217,9 +223,18 @@ docker-osx:naked () {
 }
 
 
+docker-osx:naked-auto () {
+    docker build ${NO_CACHE} \
+        --build-arg RANKMIRRORS=true \
+        --build-arg MIRROR_COUNTRY="${MIRROR_COUNTRY}" \
+        -f ./Dockerfile.naked-auto \
+        -t docker-osx:naked-auto .
+    docker tag docker-osx:naked-auto sickcodes/docker-osx:naked-auto
+}
+
+
 docker-osx:big-sur () {
-    docker build \
-        "${NO_CACHE}" \
+    docker build ${NO_CACHE} \
         --build-arg VERSION=11 \
         --build-arg RANKMIRRORS=true \
         --build-arg MIRROR_COUNTRY="${MIRROR_COUNTRY}" \
@@ -228,9 +243,17 @@ docker-osx:big-sur () {
     docker tag docker-osx:big-sur sickcodes/docker-osx:big-sur
 }
 
+docker-osx:monterey () {
+    docker build ${NO_CACHE} \
+        --build-arg RANKMIRRORS=true \
+        --build-arg MIRROR_COUNTRY="${MIRROR_COUNTRY}" \
+        -f ./Dockerfile.monterey \
+        -t docker-osx:monterey .
+    docker tag docker-osx:monterey sickcodes/docker-osx:monterey
+}
+
 docker-osx:auto () {
-    docker build \
-        "${NO_CACHE}" \
+    docker build ${NO_CACHE} \
         --build-arg RANKMIRRORS=true \
         --build-arg MIRROR_COUNTRY="${MIRROR_COUNTRY}" \
         -f ./Dockerfile.auto \
@@ -239,8 +262,7 @@ docker-osx:auto () {
 }
 
 docker-osx:auto-big-sur () {
-    docker build \
-        "${NO_CACHE}" \
+    docker build ${NO_CACHE} \
         --build-arg RANKMIRRORS=true \
         --build-arg MIRROR_COUNTRY="${MIRROR_COUNTRY}" \
         --build-arg IMAGE_URL='https://images.sick.codes/mac_hdd_ng_auto_big_sur.img' \
@@ -289,7 +311,9 @@ if [[ "${DOCKER_USERNAME}" ]] && [[ "${DOCKER_PASSWORD}" ]]; then
     docker login --username "${DOCKER_USERNAME}" --password "${DOCKER_PASSWORD}" \
         && docker push sickcodes/docker-osx:latest \
         && docker push sickcodes/docker-osx:big-sur \
+        && docker push sickcodes/docker-osx:monterey \
         && docker push sickcodes/docker-osx:naked \
+        && docker push sickcodes/docker-osx:naked-auto \
         && docker push sickcodes/docker-osx:auto \
         && docker push sickcodes/docker-osx:auto-big-sur \
         && touch PUSHED

@@ -2,7 +2,26 @@
 
 ![Running Mac OS X in a Docker container](/running-mac-inside-docker-qemu.png?raw=true "OSX KVM DOCKER")
 
-Run Mac OS X in Docker with near-native performance! X11 Forwarding! iMessage security research!
+Run Mac OS X in Docker with near-native performance! X11 Forwarding! iMessage security research! iPhone USB working! macOS in a Docker container!
+
+# Docker-OSX now has a Discord server & Telegram!
+
+The Discord is active on #docker-osx and anyone is welcome to come and ask questions, ideas, etc.
+
+<p align="center">
+    <a href="https://hub.docker.com/r/sickcodes/docker-osx"><img src="https://dockeri.co/image/sickcodes/docker-osx"/></a><a href="https://discord.gg/mx8pPw39Yg"><a href="https://discord.gg/mx8pPw39Yg" target="_blank"><img src="https://raw.githubusercontent.com/sickcodes/Docker-OSX/master/discord-logo.svg"></a></a>
+</p>
+
+
+
+
+### Click to join the Discord server [https://discord.gg/mx8pPw39Yg](https://discord.gg/mx8pPw39Yg)
+
+### Click to join the Telegram server [https://t.me/sickcodeschat](https://t.me/sickcodeschat)
+
+Or reach out via Linkedin if it's private: [https://www.linkedin.com/in/sickcodes](https://www.linkedin.com/in/sickcodes)
+
+Or via [https://sick.codes/contact/](https://sick.codes/contact/)
 
 ## Author
 
@@ -12,15 +31,26 @@ Additional credits can be found here: https://github.com/sickcodes/Docker-OSX/bl
 
 Additionally, comprehensive list of all contributors can be found here: https://github.com/sickcodes/Docker-OSX/graphs/contributors
 
-Special thanks to [@kholia](https://twitter.com/kholia) for maintaining the upstream project, which Docker-OSX is built on top of: [OSX-KVM](https://github.com/kholia/OSX-KVM).
+Big thanks to [@kholia](https://twitter.com/kholia) for maintaining the upstream project, which Docker-OSX is built on top of: [OSX-KVM](https://github.com/kholia/OSX-KVM).
 
-Big thanks to the OpenCore team over at: https://github.com/acidanthera/OpenCorePkg. Their well-maintained bootloader provides much of the great functionality that Docker-OSX users enjoy :)
+Also special thanks to [@thenickdude](https://github.com/thenickdude) who maintains the valuable fork [KVM-OpenCore](https://github.com/thenickdude/KVM-Opencore), which was started by [@Leoyzen](https://github.com/Leoyzen/)!
+
+Extra special thanks to the OpenCore team over at: https://github.com/acidanthera/OpenCorePkg. Their well-maintained bootloader provides much of the great functionality that Docker-OSX users enjoy :)
 
 If you like this project, consider contributing here or upstream!
 
 ## Quick Start Docker-OSX
 
+Video setup tutorial is also available here: https://www.youtube.com/watch?v=wLezYl77Ll8
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=wLezYl77Ll8" target="_blank"><img src="https://raw.githubusercontent.com/sickcodes/Docker-OSX/master/Youtube-Screenshot-Docker-OSX-Setup.png"></a>
+</p>
+
 First time here? try [initial setup](#initial-setup), otherwise try the instructions below to use either Catalina or Big Sur.
+
+## Any questions, ideas, or just want to hang out?
+# [https://discord.gg/mx8pPw39Yg](https://discord.gg/mx8pPw39Yg)
 
 ### Catalina [![https://img.shields.io/docker/image-size/sickcodes/docker-osx/latest?label=sickcodes%2Fdocker-osx%3Alatest](https://img.shields.io/docker/image-size/sickcodes/docker-osx/latest?label=sickcodes%2Fdocker-osx%3Alatest)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
 
@@ -31,6 +61,8 @@ docker run -it \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -e "DISPLAY=${DISPLAY:-:0.0}" \
     sickcodes/docker-osx:latest
+
+# docker build -t docker-osx .
 ```
 ### Big Sur [![https://img.shields.io/docker/image-size/sickcodes/docker-osx/big-sur?label=sickcodes%2Fdocker-osx%3Abig-sur](https://img.shields.io/docker/image-size/sickcodes/docker-osx/big-sur?label=sickcodes%2Fdocker-osx%3Abig-sur)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
 
@@ -41,28 +73,237 @@ docker run -it \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -e "DISPLAY=${DISPLAY:-:0.0}" \
     sickcodes/docker-osx:big-sur
+
+# docker build -t docker-osx -e VERSION='Big Sur' .
 ```
 
-## Technical details
+### Monterey [![https://img.shields.io/docker/image-size/sickcodes/docker-osx/monterey?label=sickcodes%2Fdocker-osx%3Amonterey](https://img.shields.io/docker/image-size/sickcodes/docker-osx/monterey?label=sickcodes%2Fdocker-osx%3Amonterey)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
 
-There currently four images, each with different use cases (explained [below](#container-images)):
+```bash
 
-[![https://img.shields.io/docker/image-size/sickcodes/docker-osx/latest?label=sickcodes%2Fdocker-osx%3Alatest](https://img.shields.io/docker/image-size/sickcodes/docker-osx/latest?label=sickcodes%2Fdocker-osx%3Alatest)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
+docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e "DISPLAY=${DISPLAY:-:0.0}" \
+    -e GENERATE_UNIQUE=true \
+    -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist' \
+    sickcodes/docker-osx:monterey
+
+# docker build -t docker-osx -f Dockerfile.monterey .
+```
+
+#### Run Catalina Pre-Installed [![https://img.shields.io/docker/image-size/sickcodes/docker-osx/auto?label=sickcodes%2Fdocker-osx%3Aauto](https://img.shields.io/docker/image-size/sickcodes/docker-osx/auto?label=sickcodes%2Fdocker-osx%3Aauto)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
+
+```bash
+# 40GB disk space required: 20GB original image 20GB your container.
+docker pull sickcodes/docker-osx:auto
+
+# boot directly into a real OS X shell with a visual display [NOT HEADLESS]
+docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e "DISPLAY=${DISPLAY:-:0.0}" \
+    sickcodes/docker-osx:auto
+
+# username is user
+# passsword is alpine
+```
+
+#### Download the image manually and use it in Docker 
 
 [![https://img.shields.io/docker/image-size/sickcodes/docker-osx/naked?label=sickcodes%2Fdocker-osx%3Anaked](https://img.shields.io/docker/image-size/sickcodes/docker-osx/naked?label=sickcodes%2Fdocker-osx%3Anaked)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
 
+
+This is a particularly good way for downloading the container, in case Docker's CDN (or your connection) happens to be slow.
+
+```bash
+wget https://images2.sick.codes/mac_hdd_ng_auto.img
+
+docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -v "${PWD}/mac_hdd_ng_auto.img:/image" \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e "DISPLAY=${DISPLAY:-:0.0}" \
+    -e GENERATE_UNIQUE=true \
+    -e MASTER_PLIST_URL=https://raw.githubusercontent.com/sickcodes/Docker-OSX/master/custom/config-nopicker-custom.plist \
+    sickcodes/docker-osx:naked
+```
+
+
+#### Use your own image and manually and automatically log into a shell
+
+[![https://img.shields.io/docker/image-size/sickcodes/docker-osx/naked-auto?label=sickcodes%2Fdocker-osx%3Anaked-auto](https://img.shields.io/docker/image-size/sickcodes/docker-osx/naked-auto?label=sickcodes%2Fdocker-osx%3Anaked-auto)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
+
+
+Enable SSH in network sharing inside the guest first. Change `-e "USERNAME=user"` and `-e "PASSWORD=password"` to your credentials. The container will add itself to `~/.ssh/authorized_keys`
+
+Since you can't see the screen, use the PLIST with nopicker, for example:
+
+```bash
+wget https://images2.sick.codes/mac_hdd_ng_auto.img
+
+docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -v "${PWD}/mac_hdd_ng_auto.img:/image" \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e "DISPLAY=${DISPLAY:-:0.0}" \
+    -e "USERNAME=user" \
+    -e "PASSWORD=alpine" \
+    -e GENERATE_UNIQUE=true \
+    -e MASTER_PLIST_URL=https://raw.githubusercontent.com/sickcodes/Docker-OSX/master/custom/config-nopicker-custom.plist \
+    sickcodes/docker-osx:naked-auto
+```
+
+# (VFIO) iPhone USB passthrough (VFIO)
+
+If you have a laptop see the next usbfluxd section.
+
+If you have a desktop PC, you can use [@Silfalion](https://github.com/Silfalion)'s instructions : [https://github.com/Silfalion/Iphone_docker_osx_passthrough](https://github.com/Silfalion/Iphone_docker_osx_passthrough)
+
+# (USBFLUXD) iPhone USB -> Network style passthrough OSX-KVM Docker-OSX
+
+This method WORKS on laptop, PC, anything!
+
+Thank you [@nikias](https://github.com/nikias) for [usbfluxd](https://github.com/corellium/usbfluxd) via [https://github.com/corellium](https://github.com/corellium)!
+
+**This is done inside Linux.**
+
+Open 3 terminals on Linux
+
+Connecting your device over USB on Linux allows you to expose `usbmuxd` on port `5000` using [https://github.com/corellium/usbfluxd](https://github.com/corellium/usbfluxd) to another system on the same network.
+
+Ensure `usbmuxd`, `socat` and `usbfluxd` are installed.
+
+`sudo pacman -S libusbmuxd usbmuxd avahi socat`
+
+Available on the AUR: [https://aur.archlinux.org/packages/usbfluxd/](https://aur.archlinux.org/packages/usbfluxd/)
+
+`yay usbfluxd`
+
+Plug in your iPhone or iPad.
+
+Terminal 1
+```bash
+sudo systemctl start usbmuxd
+sudo avahi-daemon
+```
+
+Terminal 2:
+```bash
+# on host
+sudo systemctl restart usbmuxd
+sudo socat tcp-listen:5000,fork unix-connect:/var/run/usbmuxd
+```
+
+Terminal 3:
+```bash
+sudo usbfluxd -f -n
+```
+
+### Connect to a host running usbfluxd
+
+**This is done inside macOS.**
+
+Install homebrew.
+
+`172.17.0.1` is usually the Docker bridge IP, which is your PC, but you can use any IP from `ip addr`...
+
+macOS Terminal:
+```zsh
+# on the guest
+brew install make automake autoconf libtool pkg-config gcc libimobiledevice usbmuxd
+
+git clone https://github.com/corellium/usbfluxd.git
+cd usbfluxd
+
+./autogen.sh
+make
+sudo make install
+```
+
+Accept the USB over TCP connection, and appear as local:
+
+```bash
+# on the guest
+sudo launchctl start usbmuxd
+export PATH=/usr/local/sbin:${PATH}
+sudo usbfluxd -f -r 172.17.0.1:5000
+```
+
+Close apps such as Xcode and reopen them and your device should appear!
+
+*If you need to start again on Linux, wipe the current usbfluxd, usbmuxd, and socat:*
+```bash
+sudo killall usbfluxd
+sudo systemctl restart usbmuxd
+sudo killall socat
+```
+
+## Make container FASTER using [https://github.com/sickcodes/osx-optimizer](https://github.com/sickcodes/osx-optimizer)
+
+SEE commands in [https://github.com/sickcodes/osx-optimizer](https://github.com/sickcodes/osx-optimizer)!
+
+- Skip the GUI login screen (at your own risk!)
+- Disable spotlight indexing on macOS to heavily speed up Virtual Instances.
+- Disable heavy login screen wallpaper
+- Disable updates (at your own risk!)
+
+## Important notices:
+
+**2021-09-09** - Bootdisks at runtime required for Monterey!
+
+Pick one of these:
+```
+    -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist' \
+
+    -e MASTER_PLIST_URL='https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-nopicker-custom.plist' \
+```
+
+
+## Technical details
+
+There currently five images, each with different use cases (explained [below](#container-images)):
+
+- Catalina
+- Big Sur
+- Auto (pre-made Catalina)
+- Naked (use your own .img)
+- Naked-Auto (user your own .img and SSH in)
+
+Catalina make your own image:
+
+[![https://img.shields.io/docker/image-size/sickcodes/docker-osx/latest?label=sickcodes%2Fdocker-osx%3Alatest](https://img.shields.io/docker/image-size/sickcodes/docker-osx/latest?label=sickcodes%2Fdocker-osx%3Alatest)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
+
+Big-Sur make your own image:
+
 [![https://img.shields.io/docker/image-size/sickcodes/docker-osx/big-sur?label=sickcodes%2Fdocker-osx%3Abig-sur](https://img.shields.io/docker/image-size/sickcodes/docker-osx/big-sur?label=sickcodes%2Fdocker-osx%3Abig-sur)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
+
+Monterey make your own image:
+
+[![https://img.shields.io/docker/image-size/sickcodes/docker-osx/monterey?label=sickcodes%2Fdocker-osx%3Amonterey](https://img.shields.io/docker/image-size/sickcodes/docker-osx/monterey?label=sickcodes%2Fdocker-osx%3Amonterey)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
+
+Pre-made system by [Sick.Codes](https://sick.codes): username: `user`, password: `alpine`
 
 [![https://img.shields.io/docker/image-size/sickcodes/docker-osx/auto?label=sickcodes%2Fdocker-osx%3Aauto](https://img.shields.io/docker/image-size/sickcodes/docker-osx/auto?label=sickcodes%2Fdocker-osx%3Aauto)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
 
-This special set of images was developed by [Sick.Codes](https://sick.codes).
+Bring-your-own-image setup (use any of the above first):
 
-The images (excluding `:naked`) launch a container with an existing installation with a couple of premade configurations:
-- username: `user`, password: `alpine`
+[![https://img.shields.io/docker/image-size/sickcodes/docker-osx/naked?label=sickcodes%2Fdocker-osx%3Anaked](https://img.shields.io/docker/image-size/sickcodes/docker-osx/naked?label=sickcodes%2Fdocker-osx%3Anaked)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
+
+Same as above but with `-e USERNAME` & `-e PASSWORD` and `-e OSX_COMMANDS="put your commands here"`
+
+[![https://img.shields.io/docker/image-size/sickcodes/docker-osx/naked-auto?label=sickcodes%2Fdocker-osx%3Anaked-auto](https://img.shields.io/docker/image-size/sickcodes/docker-osx/naked-auto?label=sickcodes%2Fdocker-osx%3Anaked-auto)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
+
+## Capabilities
+- use iPhone OSX KVM on Linux using usbfluxd!
+- macOS Monterey!
+- Folder sharing
 - SSH enabled (`localhost:50922`)
 - VNC enabled (`localhost:8888`) if using ./vnc version
-- VNC enabled (`localhost:8888`) if using ./vnc version
-- auto-updates disabled
 - [serial number generator!](https://github.com/sickcodes/osx-serial-generator)
 - X11 forwarding is enabled
 - runs on top of QEMU + KVM
@@ -127,8 +368,10 @@ In case you're interested, contact [@sickcodes on Twitter](https://twitter.com/s
 Docker-OSX is licensed under the [GPL v3+](LICENSE). Contributions are welcomed and immensely appreciated. You are in-fact permitted to use Docker-OSX as a tool to create proprietary software.
 
 ### Other cool Docker/QEMU based projects
-
-- [Run iOS in a Docker container with Docker-eyeOS](https://github.com/sickcodes/Docker-eyeOS) - [https://github.com/sickcodes/Docker-eyeOS](https://github.com/sickcodes/Docker-eyeOS)
+- [Run Android in a Docker Container with Dock Droid](https://github.com/sickcodes/dock-droid)
+- [Run Android fully native on the host!](https://github.com/sickcodes/droid-native)
+- [Run iOS 12 in a Docker container with Docker-eyeOS](https://github.com/sickcodes/Docker-eyeOS) - [https://github.com/sickcodes/Docker-eyeOS](https://github.com/sickcodes/Docker-eyeOS)
+- [Run iMessage relayer in Docker with Bluebubbles.app](https://bluebubbles.app/) - [Getting started wiki](https://github.com/BlueBubblesApp/BlueBubbles-Server/wiki/Running-via-Docker)
 
 ## Disclaimer
 
@@ -148,11 +391,12 @@ There are several different Docker-OSX images available which are suitable for d
 - `sickcodes/docker-osx:latest` - [I want to use Docker-OSX to develop/secure apps in Xcode (sign into Xcode, Transporter)](#quick-start-your-own-image-naked-container-image)
 - `sickcodes/docker-osx:naked` - [I want to use Docker-OSX for CI/CD-related purposes (sign into Xcode, Transporter)](#building-a-headless-container-from-a-custom-image)
 
-Create your personal image using `:latest`. Then, extract the image. Afterwards, you will be able to duplicate that image and import it to the `:naked` container, in order to revert the container to a previous state repeatedly.
+Create your personal image using `:latest` or `big-sur`. Then, pull the image out the image. Afterwards, you will be able to duplicate that image and import it to the `:naked` container, in order to revert the container to a previous state repeatedly.
 
 - `sickcodes/docker-osx:auto` - [I'm only interested in using the command line (useful for compiling software or using Homebrew headlessly).](#prebuilt-image-with-arbitrary-command-line-arguments)
 - `sickcodes/docker-osx:naked` - [I need iMessage/iCloud for security research.](#generating-serial-numbers)
 - `sickcodes/docker-osx:big-sur` - [I want to run Big Sur.](#quick-start-docker-osx)
+- `sickcodes/docker-osx:monterey` - [I want to run Monterey.](#quick-start-docker-osx)
 
 ## Initial setup
 Before you do anything else, you will need to turn on hardware virtualization in your BIOS. Precisely how will depend on your particular machine (and BIOS), but it should be straightforward.
@@ -164,7 +408,7 @@ Then, you'll need QEMU and some other dependencies on your host:
 sudo pacman -S qemu libvirt dnsmasq virt-manager bridge-utils flex bison iptables-nft edk2-ovmf
 
 # UBUNTU DEBIAN
-sudo apt install qemu qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils virt-manager
+sudo apt install qemu qemu-kvm libvirt-clients libvirt-daemon-system bridge-utils virt-manager libguestfs-tools
 
 # CENTOS RHEL FEDORA
 sudo yum install libvirt qemu-kvm
@@ -208,6 +452,42 @@ More specific/advanced troubleshooting questions and answers may be found in [Mo
 
 See [initial setup](#initial-setup).
 
+
+
+#### Docker Unknown Server OS error
+
+```console
+docker: unknown server OS: .
+See 'docker run --help'.
+```
+
+This means your docker daemon is not running.
+
+`pgrep dockerd` should return nothing
+
+Therefore, you have a few choices.
+
+`sudo dockerd` for foreground Docker usage. I use this.
+
+Or
+
+`sudo systemctl --start dockerd` to start dockerd this now.
+
+Or
+
+`sudo systemctl --enable --now dockerd` for start dockerd on every reboot, and now.
+
+
+#### Use more CPU Cores/SMP
+
+This will use all available cores; adjust accordingly to the day of the week:
+
+```
+    -e CPU_STRING=$(nproc) \
+```
+
+This will use `-smp $(nproc)`
+
 #### Confirm your user is part of the the Docker group, KVM group, libvirt group
 
 If you use `sudo dockerd` or dockerd is controlled by systemd/systemctl, then you must be in the Docker group.
@@ -247,51 +527,6 @@ Big thank you to our contributors who have worked out almost every conceivable i
 
 [https://github.com/sickcodes/Docker-OSX/blob/master/CREDITS.md](https://github.com/sickcodes/Docker-OSX/blob/master/CREDITS.md)
 
-### The big-sur image starts slowly after installation. Is this expected?
-
-Automatic updates are still on in the container's settings. You may wish to turn them off. [We have future plans for development around this.](https://github.com/sickcodes/Docker-OSX/issues/227)
-
-### What is `${DISPLAY:-:0.0}`?
-
-`$DISPLAY` is the shell variable that refers to your X11 display server.
-
-`${DISPLAY}` is the same, but allows you to join variables like this:
-
-- e.g. `${DISPLAY}_${DISPLAY}` would print `:0.0_:0.0`
-- e.g. `$DISPLAY_$DISPLAY`     would print `:0.0`
-
-...because `$DISPLAY_` is not `$DISPLAY`
-
-`${variable:-fallback}` allows you to set a "fallback" variable to be substituted if `$variable` is not set.
-
-You can also use `${variable:=fallback}` to set that variable (in your current terminal).
-
-In Docker-OSX, we assume, `:0.0` is your default `$DISPLAY` variable.
-
-You can see what yours is
-
-```bash
-echo $DISPLAY
-```
-
-That way, `${DISPLAY:-:0.0}` will use whatever variable your X11 server has set for you, else `:0.0`
-
-### What is `-v /tmp/.X11-unix:/tmp/.X11-unix`?
-
-`-v` is a Docker command-line option that lets you pass a volume to the container.
-
-The directory that we are letting the Docker container use is a X server display socket.
-
-`/tmp/.X11-unix`
-
-If we let the Docker container use the same display socket as our own environment, then any applications you run inside the Docker container will show up on your screen too! [https://www.x.org/archive/X11R6.8.0/doc/RELNOTES5.html](https://www.x.org/archive/X11R6.8.0/doc/RELNOTES5.html)
-
-### ALSA errors on startup or container creation
-
-You may when initialising or booting into a container see errors from the `(qemu)` console of the following form: 
-`ALSA lib blahblahblah: (function name) returned error: no such file or directory`. These are more or less expected. As long as you are able to boot into the container and everything is working, no reason to worry about these.
-
-See also: [here](https://github.com/sickcodes/Docker-OSX/issues/174).
 
 ### Start the same container later (persistent disk)
 
@@ -333,7 +568,7 @@ docker ps -a
 docker start -ai -i <Replace this with your ID>
 ```
 
-### LibGTK errors
+### LibGTK errors "connection refused"
 
 You may see one or more libgtk-related errors if you do not have everything set up for hardware virtualisation yet. If you have not yet done so, check out the [initial setup](#initial-setup) section and the [routine checks](#routine-checks) section as you may have missed a setup step or may not have all the needed Docker dependencies ready to go.
 
@@ -489,6 +724,77 @@ nano /etc/sysctl.conf || vi /etc/sysctl.conf || vim /etc/sysctl.conf
 # now reboot
 ```
 
+## Share folder with Docker-OSX QEMU macOS
+
+Sharing a folder with guest is quite simple.
+
+Your folder, will go to /mnt/hostshare inside the Arch container which is then passed over QEMU.
+
+Then mount using `sudo -S mount_9p hostshare` from inside the mac.
+
+For example,
+
+```bash
+FOLDER=~/somefolder
+```
+
+```bash
+    -v "${FOLDER}:/mnt/hostshare" \
+    -e EXTRA="-virtfs local,path=/mnt/hostshare,mount_tag=hostshare,security_model=passthrough,id=hostshare" \
+```
+
+Full example:
+
+```bash
+# stat mac_hdd_ng.img
+SHARE=~/somefolder
+
+docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e "DISPLAY=${DISPLAY:-:0.0}" \
+    -v "${PWD}/mac_hdd_ng.img:/home/arch/OSX-KVM/mac_hdd_ng.img" \
+    -v "${SHARE}:/mnt/hostshare" \
+    -e EXTRA="-virtfs local,path=/mnt/hostshare,mount_tag=hostshare,security_model=passthrough,id=hostshare" \
+    sickcodes/docker-osx:latest
+
+# !!! Open Terminal inside macOS and run the following command to mount the virtual file system
+# sudo -S mount_9p hostshare
+
+```
+
+
+### Share USB Drive into macOS over QEMU
+
+## Mount USB Drive (Hotplug/Hot Plug USB)
+
+Start your container.
+
+Pick a port, for example, `7700`.
+
+`lsusb` to get `vid:pid`
+
+On Linux:
+`sudo usbredirserver -p 7700 1e3d:2096`
+
+Now, in the Docker window hit Enter to see the `(qemu)` console.
+
+You can add/remove the disk using commands like this, even once the machine is started:
+
+`chardev-add socket,id=usbredirchardev1,port=7700,host=172.17.0.1`
+
+`device_add usb-redir,chardev=usbredirchardev1,id=usbredirdev1,debug=4`
+
+## Mount USB Drive inside macOS at boot Docker OSX
+
+```bash
+PORT=7700
+IP_ADDRESS=172.17.0.1
+
+-e EXTRA="-chardev socket,id=usbredirchardev1,port=${PORT},host=${IP_ADDRESS} -device usb-redir,chardev=usbredirchardev1,id=usbredirdev1,debug=4" \`
+```
+
 ### Fedora: enable internet connectivity with a bridged network
 
 Fedora's default firewall settings may prevent Docker's network interface from reaching the internet. In order to reoslve this, you will need to whitelist the interface in your firewall:
@@ -614,7 +920,10 @@ At any time, verify your serial number before logging into iCloud, etc.
 # this is a quick way to check your serial number via cli inside OSX
 ioreg -l | grep IOPlatformSerialNumber
 
-# or from the host
+# test some commands
+sshpass -p 'alpine' ssh user@localhost -p 50922 'ping google.com'
+
+# check your serial number
 sshpass -p 'alpine' ssh user@localhost -p 50922 'ioreg -l | grep IOPlatformSerialNumber'
 ```
 
@@ -678,8 +987,9 @@ docker run --rm -it \
     -e NOPICKER=true \
     -e GENERATE_UNIQUE=true \
     -e DEVICE_MODEL="iMacPro1,1" \
-    -e OSX_COMMANDS='ioreg -l | grep IOPlatformSerialNumber' \
     sickcodes/docker-osx:auto
+
+# -e OSX_COMMANDS='ioreg -l | grep IOPlatformSerialNumber' \
 ```
 
 #### This example generates a specific set of serial numbers at runtime
@@ -786,7 +1096,10 @@ Or tell the container to use specific ones using `-e GENERATE_SPECIFIC=true`
 
 ### I'd like to run Docker-OSX with WSL2 (Windows, Ubuntu)
 
-Ensure KVM is enabled and `x11-apps` is installed. 
+Ensure KVM is enabled and `x11-apps` is installed.
+
+to void troubles related to docker daemons on WLS 2, use Docker on Windows, and extern it to your distro.
+See Docker Docs for the complete detail setup [here](https://docs.docker.com/docker-for-windows/wsl/)
 
 See more in-depth discussion [here](https://github.com/sickcodes/Docker-OSX/issues/17) and [here](https://github.com/sickcodes/Docker-OSX/issues/60).
 
@@ -883,6 +1196,23 @@ Here's a few other resolutions! If you resolution is invalid, it will default to
     -e HEIGHT=1600 \
 ```
 
+#### This example shows how to change resolution after the container is created.
+
+First step is to stop the docker daemon
+```
+sudo systemctl stop docker
+```
+The second step is to change container config in 
+```
+/var/lib/docker/containers/[container-id]/config.v2.json
+```
+(Suppose your original WIDTH is 1024 and HEIGHT is 768, you can search 1024 and replace it with the new value. Same for 768.)
+
+The last step is to restart the docker daemon
+```
+sudo systemctl restart docker
+```
+
 ### Mounting physical disks in Mac OSX
 
 Pass the disk into the container as a volume and then pass the disk again into QEMU command line extras with.
@@ -916,6 +1246,45 @@ docker run -it \
 ```
 
 See also: [here](https://github.com/sickcodes/Docker-OSX/issues/222).
+
+
+#### Extracting the APFS disk on Linux
+
+In Docker-OSX, we are using `qcow2` images.
+
+This means the image grows as you use it, but the guest OS thinks you have 200GB available.
+
+
+**READ ONLY**
+
+```bash
+# mount the qemu image like a real disk
+sudo modprobe nbd max_part=8
+sudo qemu-nbd --connect=/dev/nbd0 ./image.img
+sudo fdisk /dev/nbd0 -l
+
+mkdir -p ./mnt
+sudo mount /dev/nbd0p1 ./mnt
+
+# inspect partitions (2 partitions)
+sudo fdisk /dev/nbd0 -l
+
+# mount using apfs-linux-rw OR apfs-fuse
+mkdir -p ./part
+
+sudo mount /dev/nbd0p2 ./part
+sudo apfs-fuse -o allow_other /dev/nbd0p2 ./part
+
+```
+
+When you are finishing looking at your disk, you can unmount the partition, the disk, and remove the loopback device:
+
+```bash
+sudo umount ./part
+sudo umount ./mnt
+sudo qemu-nbd --disconnect /dev/nbd0
+sudo rmmod nbd
+```
 
 ### USB Passthrough
 
@@ -1020,28 +1389,11 @@ The Quick Start command should work out of the box, provided that you keep the f
     -e "DISPLAY=${DISPLAY:-:0.0}" \
 ```
 
-#### Download the image manually and use it in Docker 
-
-[![https://img.shields.io/docker/image-size/sickcodes/docker-osx/naked?label=sickcodes%2Fdocker-osx%3Anaked](https://img.shields.io/docker/image-size/sickcodes/docker-osx/naked?label=sickcodes%2Fdocker-osx%3Anaked)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
-
-
-This is a particularly good way for downloading the container, in case Docker's CDN (or your connection) happens to be slow.
-
-```bash
-wget https://images2.sick.codes/mac_hdd_ng_auto.img
-
-docker run -it \
-    --device /dev/kvm \
-    -p 50922:10022 \
-    -v "${PWD}/mac_hdd_ng_auto.img:/image" \
-    -v /tmp/.X11-unix:/tmp/.X11-unix \
-    -e "DISPLAY=${DISPLAY:-:0.0}" \
-    sickcodes/docker-osx:naked
-```
-
 #### Prebuilt image with arbitrary command line arguments 
 
 [![https://img.shields.io/docker/image-size/sickcodes/docker-osx/auto?label=sickcodes%2Fdocker-osx%3Aauto](https://img.shields.io/docker/image-size/sickcodes/docker-osx/auto?label=sickcodes%2Fdocker-osx%3Aauto)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
+
+`-e OSX_COMMANDS` lets you run any commands inside the container
 
 ```bash
 docker pull sickcodes/docker-osx:auto
@@ -1052,10 +1404,33 @@ docker run -it \
     -p 50922:10022 \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -e "DISPLAY=${DISPLAY:-:0.0}" \
-    -e "OSX_COMMANDS=/bin/bash -c \"pwd && uname -a\"" \
+    -e "OSX_COMMANDS=/bin/bash -c \"put your commands here\"" \
     sickcodes/docker-osx:auto
 
 # Boots in a minute or two!
+```
+
+
+```bash
+
+OR if you have an image already and just want to log in and execute arbitrary commands:
+
+```bash
+docker pull sickcodes/docker-osx:naked-auto
+
+# boot to OS X shell + display + specify commands to run inside OS X!
+docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e "DISPLAY=${DISPLAY:-:0.0}" \
+    -e USERNAME=yourusername \
+    -e PASSWORD=yourpassword \
+    -e "OSX_COMMANDS=/bin/bash -c \"put your commands here\"" \
+    sickcodes/docker-osx:naked-auto
+
+# Boots in a minute or two!
+
 ```
 
 ### Further examples
@@ -1101,11 +1476,12 @@ docker run -i \
     -p 5999:5999 \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -e "DISPLAY=${DISPLAY:-:0.0}" \
-    -e EXTRA="-display none -vnc 0.0.0.0:99,password" \
+    -e EXTRA="-display none -vnc 0.0.0.0:99,password=on" \
     sickcodes/docker-osx:big-sur
 
-# type `change vnc password` into the docker terminal and set a password
+# type `change vnc password myvncusername` into the docker terminal and set a password
 # connect to localhost:5999 using VNC
+# qemu 6 seems to require a username for vnc now
 ```
 
 **NOT TLS/HTTPS Encrypted at all!**
@@ -1118,11 +1494,13 @@ Or `ssh -N root@1.1.1.1 -L  5999:127.0.0.1:5999`, where `1.1.1.1` is your remote
 
 Add the following line:
 
-`-e EXTRA="-display none -vnc 0.0.0.0:99,password"`
+`-e EXTRA="-display none -vnc 0.0.0.0:99,password=on"`
 
 In the Docker terminal, press `enter` until you see `(qemu)`.
 
-Type `change vnc password`
+Type `change vnc password someusername`
+
+Enter a password for your new vnc username^.
 
 You also need the container IP: `docker inspect <containerid> | jq -r '.[0].NetworkSettings.IPAddress'`
 
@@ -1143,6 +1521,7 @@ Note: `-disable-ticketing` will allow unauthenticated access to the VM. See the 
 ```bash
   docker run \
     --device /dev/kvm \
+    -p 3001:3001 \
     -p 50922:10022 \
     -e "DISPLAY=${DISPLAY:-:0.0}" \
     -e EXTRA="-monitor telnet::45454,server,nowait -nographic -serial null -spice disable-ticketing,port=3001" \
@@ -1167,23 +1546,6 @@ docker run \
     --device /dev/snd \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     newImageName
-```
-
-#### Run Catalina Pre-Installed [![https://img.shields.io/docker/image-size/sickcodes/docker-osx/auto?label=sickcodes%2Fdocker-osx%3Aauto](https://img.shields.io/docker/image-size/sickcodes/docker-osx/auto?label=sickcodes%2Fdocker-osx%3Aauto)](https://hub.docker.com/r/sickcodes/docker-osx/tags?page=1&ordering=last_updated)
-
-```bash
-docker pull sickcodes/docker-osx:auto
-
-# boot directly into a real OS X shell with a visual display [NOT HEADLESS]
-docker run -it \
-    --device /dev/kvm \
-    -p 50922:10022 \
-    -v /tmp/.X11-unix:/tmp/.X11-unix \
-    -e "DISPLAY=${DISPLAY:-:0.0}" \
-    sickcodes/docker-osx:auto
-
-# username is user
-# passsword is alpine
 ```
 
 ```bash
@@ -1256,3 +1618,52 @@ chmod +x ./Launch-nopicker.sh
 sed -i -e s/OpenCore\.qcow2/OpenCore\-nopicker\.qcow2/ ./Launch-nopicker.sh
 "
 ```
+
+
+
+### The big-sur image starts slowly after installation. Is this expected?
+
+Automatic updates are still on in the container's settings. You may wish to turn them off. [We have future plans for development around this.](https://github.com/sickcodes/Docker-OSX/issues/227)
+
+### What is `${DISPLAY:-:0.0}`?
+
+`$DISPLAY` is the shell variable that refers to your X11 display server.
+
+`${DISPLAY}` is the same, but allows you to join variables like this:
+
+- e.g. `${DISPLAY}_${DISPLAY}` would print `:0.0_:0.0`
+- e.g. `$DISPLAY_$DISPLAY`     would print `:0.0`
+
+...because `$DISPLAY_` is not `$DISPLAY`
+
+`${variable:-fallback}` allows you to set a "fallback" variable to be substituted if `$variable` is not set.
+
+You can also use `${variable:=fallback}` to set that variable (in your current terminal).
+
+In Docker-OSX, we assume, `:0.0` is your default `$DISPLAY` variable.
+
+You can see what yours is
+
+```bash
+echo $DISPLAY
+```
+
+That way, `${DISPLAY:-:0.0}` will use whatever variable your X11 server has set for you, else `:0.0`
+
+### What is `-v /tmp/.X11-unix:/tmp/.X11-unix`?
+
+`-v` is a Docker command-line option that lets you pass a volume to the container.
+
+The directory that we are letting the Docker container use is a X server display socket.
+
+`/tmp/.X11-unix`
+
+If we let the Docker container use the same display socket as our own environment, then any applications you run inside the Docker container will show up on your screen too! [https://www.x.org/archive/X11R6.8.0/doc/RELNOTES5.html](https://www.x.org/archive/X11R6.8.0/doc/RELNOTES5.html)
+
+### ALSA errors on startup or container creation
+
+You may when initialising or booting into a container see errors from the `(qemu)` console of the following form: 
+`ALSA lib blahblahblah: (function name) returned error: no such file or directory`. These are more or less expected. As long as you are able to boot into the container and everything is working, no reason to worry about these.
+
+See also: [here](https://github.com/sickcodes/Docker-OSX/issues/174).
+

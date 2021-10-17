@@ -3,7 +3,7 @@
 #    / __ \____  _____/ /_____  _____/ __ \/ ___/ |/ /
 #   / / / / __ \/ ___/ //_/ _ \/ ___/ / / /\__ \|   /
 #  / /_/ / /_/ / /__/ ,< /  __/ /  / /_/ /___/ /   |
-# /_____/\____/\___/_/|_|\___/_/   \____//____/_/|_|
+# /_____/\____/\___/_/|_|\___/_/   \____//____/_/|_| [MONTEREY]
 #
 # Title:            Docker-OSX (Mac on Docker)
 # Author:           Sick.Codes https://twitter.com/sickcodes
@@ -11,158 +11,31 @@
 # License:          GPLv3+
 # Repository:       https://github.com/sickcodes/Docker-OSX
 # Website:          https://sick.codes
-#
-# All credits for OSX-KVM and the rest at @Kholia's repo: https://github.com/kholia/osx-kvm
-# OpenCore support go to https://github.com/Leoyzen/KVM-Opencore
-# and https://github.com/thenickdude/KVM-Opencore/
-#
-# This Dockerfile automates the installation of Docker-OSX
-# It will build a 200GB container. You can change the size using build arguments.
-# This Dockerfile builds on top of the work done by Dhiru Kholia, and many others.
-#
-# Build:
-#
-#       docker build -t docker-osx .
-#       docker build -t docker-osx --build-arg VERSION=10.15.5 --build-arg SIZE=200G .
-#
-# Basic Run:
-#
-#       docker run --device /dev/kvm --device /dev/snd -v /tmp/.X11-unix:/tmp/.X11-unix -e "DISPLAY=${DISPLAY:-:0.0}" sickcodes/docker-osx:latest
-#
-# Run with SSH:
-#
-#       docker run --device /dev/kvm --device /dev/snd -e RAM=6 -p 50922:10022 -v /tmp/.X11-unix:/tmp/.X11-unix -e "DISPLAY=${DISPLAY:-:0.0}" sickcodes/docker-osx:latest
-#       # ssh fullname@localhost -p 50922
-#
-# Optargs:
-#
-#       -v $PWD/disk.img:/image
-#       -e SIZE=200G
-#       -e VERSION=10.15.6
-#       -e RAM=5
-#       -e SMP=4
-#       -e CORES=4
-#       -e EXTRA=
-#       -e INTERNAL_SSH_PORT=10022
-#       -e MAC_ADDRESS=
-#
-# Extra QEMU args:
-#
-#       docker run ... -e EXTRA="-usb -device usb-host,hostbus=1,hostaddr=8" ...
-#       # you will also need to pass the device to the container
+# 
+# Notes:            Uses a self-hosted BaseSystem.img from a USB installer.
+#                   If you want to DIY, use https://github.com/corpnewt/gibMacOS
+#                   Set seed as developer, and install the Install Assistant on Big Sur
+#                   Burn to a USB, and pull out BaseSystem.img
+#                   Or download from https://images.sick.codes/BaseSystem_Monterey.dmg
+# 
 
-FROM archlinux:base-devel
-LABEL maintainer='https://twitter.com/sickcodes <https://sick.codes>'
+FROM sickcodes/docker-osx
+
+MAINTAINER 'https://twitter.com/sickcodes' <https://sick.codes>
 
 SHELL ["/bin/bash", "-c"]
 
 # change disk size here or add during build, e.g. --build-arg VERSION=10.14.5 --build-arg SIZE=50G
 ARG SIZE=200G
-ARG VERSION=10.15.6
-
-# OPTIONAL: Arch Linux server mirrors for super fast builds
-# set RANKMIRRORS to any value other that nothing, e.g. -e RANKMIRRORS=true
-ARG RANKMIRRORS
-ARG MIRROR_COUNTRY=US
-ARG MIRROR_COUNT=10
-
-RUN if [[ "${RANKMIRRORS}" ]]; then \
-        { pacman -Sy wget --noconfirm || pacman -Syu wget --noconfirm ; } \
-        ; wget -O ./rankmirrors "https://raw.githubusercontent.com/sickcodes/Docker-OSX/master/rankmirrors" \
-        ; wget -O- "https://www.archlinux.org/mirrorlist/?country=${MIRROR_COUNTRY:-US}&protocol=https&use_mirror_status=on" \
-        | sed -e 's/^#Server/Server/' -e '/^#/d' \
-        | head -n "$((${MIRROR_COUNT:-10}+1))" \
-        | bash ./rankmirrors --verbose --max-time 5 - > /etc/pacman.d/mirrorlist \
-        && tee -a /etc/pacman.d/mirrorlist <<< 'Server = http://mirrors.evowise.com/archlinux/$repo/os/$arch' \
-        && tee -a /etc/pacman.d/mirrorlist <<< 'Server = http://mirror.rackspace.com/archlinux/$repo/os/$arch' \
-        && tee -a /etc/pacman.d/mirrorlist <<< 'Server = https://mirror.rackspace.com/archlinux/$repo/os/$arch' \
-        && cat /etc/pacman.d/mirrorlist \
-    ; fi
-
-# This fails on hub.docker.com, useful for debugging in cloud
-# RUN [[ $(egrep -c '(svm|vmx)' /proc/cpuinfo) -gt 0 ]] || { echo KVM not possible on this host && exit 1; }
-
-# RUN tee -a /etc/pacman.conf <<< '[community-testing]' \
-#     && tee -a /etc/pacman.conf <<< 'Include = /etc/pacman.d/mirrorlist'
-
-RUN pacman -Syu git zip vim nano alsa-utils openssh --noconfirm \
-    && ln -s /bin/vim /bin/vi \
-    && useradd arch -p arch \
-    && tee -a /etc/sudoers <<< 'arch ALL=(ALL) NOPASSWD: ALL' \
-    && mkdir /home/arch \
-    && chown arch:arch /home/arch
-
-# allow ssh to container
-RUN mkdir -m 700 /root/.ssh
-
-WORKDIR /root/.ssh
-RUN touch authorized_keys \
-    && chmod 644 authorized_keys
-
-WORKDIR /etc/ssh
-RUN tee -a sshd_config <<< 'AllowTcpForwarding yes' \
-    && tee -a sshd_config <<< 'PermitTunnel yes' \
-    && tee -a sshd_config <<< 'X11Forwarding yes' \
-    && tee -a sshd_config <<< 'PasswordAuthentication yes' \
-    && tee -a sshd_config <<< 'PermitRootLogin yes' \
-    && tee -a sshd_config <<< 'PubkeyAuthentication yes' \
-    && tee -a sshd_config <<< 'HostKey /etc/ssh/ssh_host_rsa_key' \
-    && tee -a sshd_config <<< 'HostKey /etc/ssh/ssh_host_ecdsa_key' \
-    && tee -a sshd_config <<< 'HostKey /etc/ssh/ssh_host_ed25519_key'
-
-USER arch
-
-# download OSX-KVM
-# RUN git clone --recurse-submodules --depth 1 https://github.com/kholia/OSX-KVM.git /home/arch/OSX-KVM
-RUN git clone --recurse-submodules --depth 1 https://github.com/kholia/OSX-KVM.git /home/arch/OSX-KVM
-
-# enable ssh
-# docker exec .... ./enable-ssh.sh
-USER arch
+ARG BASE_SYSTEM='https://images.sick.codes/BaseSystem_Monterey.dmg'
 
 WORKDIR /home/arch/OSX-KVM
 
-RUN touch enable-ssh.sh \
-    && chmod +x ./enable-ssh.sh \
-    && tee -a enable-ssh.sh <<< '[[ -f /etc/ssh/ssh_host_rsa_key ]] || \' \
-    && tee -a enable-ssh.sh <<< '[[ -f /etc/ssh/ssh_host_ed25519_key ]] || \' \
-    && tee -a enable-ssh.sh <<< '[[ -f /etc/ssh/ssh_host_ed25519_key ]] || \' \
-    && tee -a enable-ssh.sh <<< 'sudo /usr/bin/ssh-keygen -A' \
-    && tee -a enable-ssh.sh <<< 'nohup sudo /usr/bin/sshd -D &'
+RUN wget -O BaseSystem.dmg "${BASE_SYSTEM}" \
+    && qemu-img convert BaseSystem.dmg -O qcow2 -p -c BaseSystem.img \
+    && rm -f BaseSystem.dmg
 
-# QEMU CONFIGURATOR
-# set optional ram at runtime -e RAM=16
-# set optional cores at runtime -e SMP=4 -e CORES=2
-# add any additional commands in QEMU cli format -e EXTRA="-usb -device usb-host,hostbus=1,hostaddr=8"
-
-# default env vars, RUNTIME ONLY, not for editing in build time.
-
-# RUN yes | sudo pacman -Syu qemu libvirt dnsmasq virt-manager bridge-utils edk2-ovmf netctl libvirt-dbus --overwrite --noconfirm
-
-RUN yes | sudo pacman -Syu qemu libvirt dnsmasq virt-manager bridge-utils openresolv jack ebtables edk2-ovmf netctl libvirt-dbus wget --overwrite --noconfirm \
-    && yes | sudo pacman -Scc
-
-WORKDIR /home/arch/OSX-KVM
-
-RUN wget https://raw.githubusercontent.com/sickcodes/Docker-OSX/master/fetch-macOS.py
-
-RUN [[ "${VERSION%%.*}" -lt 11 ]] && { python fetch-macOS.py --version "${VERSION}" \
-        && qemu-img convert BaseSystem.dmg -O qcow2 -p -c BaseSystem.img \
-        && qemu-img create -f qcow2 mac_hdd_ng.img "${SIZE}" \
-        && rm -f BaseSystem.dmg \
-    ; } || true
-
-# VERSION=11.2.1
-# this downloads LATEST ONLY
-ARG FETCH_MAC_OS_RAW=https://raw.githubusercontent.com/acidanthera/OpenCorePkg/master/Utilities/macrecovery/macrecovery.py
-# submit a PR to here to get the version option https://github.com/acidanthera/OpenCorePkg/blob/master/Utilities/macrecovery/macrecovery.py
-
-RUN [[ "${VERSION%%.*}" -ge 11 ]] && { wget "${FETCH_MAC_OS_RAW}" \
-        && python macrecovery.py download \
-        && qemu-img convert BaseSystem.dmg -O qcow2 -p -c BaseSystem.img \
-        && qemu-img create -f qcow2 mac_hdd_ng.img "${SIZE}" \
-        && rm -f BaseSystem.dmg \
-    ; } || true
+RUN qemu-img create -f qcow2 /home/arch/OSX-KVM/mac_hdd_ng.img "${SIZE}"
 
 WORKDIR /home/arch/OSX-KVM
 
@@ -177,7 +50,8 @@ RUN if [[ "${LINUX}" == true ]]; then \
 ARG BRANCH=master
 ARG REPO='https://github.com/sickcodes/Docker-OSX.git'
 # RUN git clone --recurse-submodules --depth 1 --branch "${BRANCH}" "${REPO}"
-RUN git clone --recurse-submodules --depth 1 --branch "${BRANCH}" "${REPO}"
+RUN rm -rf ./Docker-OSX \
+    && git clone --recurse-submodules --depth 1 --branch "${BRANCH}" "${REPO}"
 
 RUN touch Launch.sh \
     && chmod +x ./Launch.sh \
@@ -237,46 +111,6 @@ RUN sudo pacman -Rns linux --noconfirm \
     ; sudo rm -rf /var/tmp/.guestfs-* \
     ; libguestfs-test-tool
 
-# These are hardcoded serials for non-iMessage related research
-# Overwritten by using GENERATE_UNIQUE=true
-# Upstream removed nopicker, so we are adding it back in, at build time
-# Once again, this is just for the Docker build so there is a default nopicker image there
-
-ARG STOCK_DEVICE_MODEL=iMacPro1,1
-ARG STOCK_SERIAL=C02TM2ZBHX87
-ARG STOCK_BOARD_SERIAL=C02717306J9JG361M
-ARG STOCK_UUID=007076A6-F2A2-4461-BBE5-BAD019F8025A
-ARG STOCK_MAC_ADDRESS=00:0A:27:00:00:00
-ARG STOCK_WIDTH=1920
-ARG STOCK_HEIGHT=1080
-ARG STOCK_MASTER_PLIST_URL=https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist
-ARG STOCK_MASTER_PLIST_URL_NOPICKER=https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-nopicker-custom.plist
-ARG STOCK_BOOTDISK=/home/arch/OSX-KVM/OpenCore-Catalina/OpenCore.qcow2
-ARG STOCK_BOOTDISK_NOPICKER=/home/arch/OSX-KVM/OpenCore-Catalina/OpenCore-nopicker.qcow2
-
-RUN ./Docker-OSX/osx-serial-generator/generate-specific-bootdisk.sh \
-    --master-plist-url="${STOCK_MASTER_PLIST_URL}" \
-    --model "${STOCK_DEVICE_MODEL}" \
-    --serial "${STOCK_SERIAL}" \
-    --board-serial "${STOCK_BOARD_SERIAL}" \
-    --uuid "${STOCK_UUID}" \
-    --mac-address "${STOCK_MAC_ADDRESS}" \
-    --width "${STOCK_WIDTH}" \
-    --height "${STOCK_HEIGHT}" \
-    --output-bootdisk "${STOCK_BOOTDISK}"
-
-
-RUN ./Docker-OSX/osx-serial-generator/generate-specific-bootdisk.sh \
-    --master-plist-url="${STOCK_MASTER_PLIST_URL_NOPICKER}" \
-    --model "${STOCK_DEVICE_MODEL}" \
-    --serial "${STOCK_SERIAL}" \
-    --board-serial "${STOCK_BOARD_SERIAL}" \
-    --uuid "${STOCK_UUID}" \
-    --mac-address "${STOCK_MAC_ADDRESS}" \
-    --width "${STOCK_WIDTH}" \
-    --height "${STOCK_HEIGHT}" \
-    --output-bootdisk "${STOCK_BOOTDISK_NOPICKER}"
-
 #### SPECIAL RUNTIME ARGUMENTS BELOW
 
 # env -e ADDITIONAL_PORTS with a comma
@@ -308,7 +142,7 @@ ENV IMAGE_FORMAT=qcow2
 
 ENV KVM='accel=kvm:tcg'
 
-ENV MASTER_PLIST_URL="https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-nopicker-custom.plist"
+ENV MASTER_PLIST_URL="https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist"
 
 # ENV NETWORKING=e1000-82545em
 ENV NETWORKING=vmxnet3
